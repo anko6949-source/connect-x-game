@@ -1,0 +1,101 @@
+.game-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.players-info {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+}
+
+.player-card {
+    background: var(--color-bg-light);
+    border: 2px solid var(--color-bg-lighter);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    min-width: 250px;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.player-card.active {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-glow);
+}
+
+.player-card.me {
+    background: var(--color-bg-lighter);
+}
+
+.player-indicator {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+}
+
+.player-indicator.player1 {
+    background: radial-gradient(circle at 30% 30%, var(--color-player1), hsl(210, 90%, 40%));
+}
+
+.player-indicator.player2 {
+    background: radial-gradient(circle at 30% 30%, var(--color-player2), hsl(350, 85%, 45%));
+}
+
+.player-details {
+    flex: 1;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.player-score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.turn-indicator {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--color-primary);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+}
+
+.game-status {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius-md);
+    font-size: 1.1rem;
+}
+
+.status-playing {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .players-info {
+        flex-direction: column;
+    }
+
+    .player-card {
+        min-width: auto;
+    }
+}

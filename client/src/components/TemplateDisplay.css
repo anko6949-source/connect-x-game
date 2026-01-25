@@ -1,0 +1,204 @@
+/* 全画面表示 */
+.template-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--color-bg) 0%, hsl(260, 25%, 15%) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.fullscreen-content {
+    text-align: center;
+    max-width: 1200px;
+    padding: var(--spacing-2xl);
+}
+
+.fullscreen-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-2xl);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.templates-grid-fullscreen {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.template-card-fullscreen {
+    background: var(--color-bg-light);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-normal);
+}
+
+.template-card-fullscreen:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.fullscreen-hint {
+    font-size: 1.2rem;
+    color: var(--color-text-dim);
+    animation: pulse 2s ease infinite;
+}
+
+/* サイドバー表示 */
+.template-sidebar {
+    background: var(--color-bg-light);
+    border: 2px solid var(--color-bg-lighter);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.sidebar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-primary);
+    text-align: center;
+}
+
+.templates-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.template-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-bg-lighter);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    transition: all var(--transition-fast);
+}
+
+.template-card:hover {
+    border-color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+/* テンプレートグリッド */
+.template-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.template-row {
+    display: flex;
+    gap: 4px;
+}
+
+.template-cell {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+}
+
+.template-cell.filled {
+    background: var(--color-primary);
+    box-shadow: 0 0 10px rgba(160, 100, 255, 0.5);
+}
+
+.template-cell.empty {
+    background: transparent;
+}
+
+/* 全画面用のテンプレートビジュアル */
+.template-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-lg);
+    min-height: 100px;
+}
+
+.template-visual .template-cell {
+    width: 30px;
+    height: 30px;
+}
+
+.template-info {
+    margin-top: var(--spacing-md);
+}
+
+.template-info h3 {
+    font-size: 1.3rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.template-points {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+/* サイドバー用の小さいビジュアル */
+.template-visual-small {
+    flex-shrink: 0;
+}
+
+.template-visual-small .template-cell {
+    width: 12px;
+    height: 12px;
+}
+
+.template-info-small {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.template-name-small {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.template-points-small {
+    font-weight: 700;
+    color: var(--color-accent);
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .fullscreen-title {
+        font-size: 2rem;
+    }
+
+    .templates-grid-fullscreen {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .template-card-fullscreen {
+        padding: var(--spacing-md);
+    }
+
+    .template-sidebar {
+        min-width: 200px;
+    }
+}

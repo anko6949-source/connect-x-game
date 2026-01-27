@@ -5,6 +5,9 @@ import { GameBoard } from '../components/GameBoard';
 import { TemplateDisplay } from '../components/TemplateDisplay';
 import { GameInfo } from '../components/GameInfo';
 import { GameEndModal } from '../components/GameEndModal';
+import { NewRecordModal } from '../components/NewRecordModal';
+import { audioManager } from '../utils/AudioManager';
+import { scoreManager } from '../utils/ScoreManager';
 import './GamePage.css';
 
 export const GamePage: React.FC = () => {
@@ -15,6 +18,11 @@ export const GamePage: React.FC = () => {
     const [showTemplates, setShowTemplates] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showGameEnd, setShowGameEnd] = useState(false);
+    const [showNewRecord, setShowNewRecord] = useState(false);
+    const [newRecordData, setNewRecordData] = useState<{ score: number; playerName: string } | null>(null);
+    const [isInputDisabled, setIsInputDisabled] = useState(false);
+    const [previousStatus, setPreviousStatus] = useState<string>('');
 
     useEffect(() => {
         const storedPlayerId = localStorage.getItem('playerId');
@@ -24,6 +32,11 @@ export const GamePage: React.FC = () => {
         }
         setPlayerId(storedPlayerId);
     }, [navigate]);
+
+    // BGM の再生開始
+    useEffect(() => {
+        audioManager.playBGM();
+    }, []);
 
     // ポーリングで状態を取得
     useEffect(() => {
@@ -42,6 +55,45 @@ export const GamePage: React.FC = () => {
                     }, 4000);
                 }
 
+                // 役成立時の SE 再生
+                if (newState.lastScoreResults && newState.lastScoreResults.length > 0) {
+                    if (!gameState?.lastScoreResults || gameState.lastScoreResults.length === 0) {
+                        audioManager.playSE('se_role');
+                    }
+                }
+
+                // ゲーム終了判定
+                if (previousStatus !== 'finished' && newState.status === 'finished') {
+                    setIsInputDisabled(true);
+
+                    // CPU対戦の場合、ハイスコア判定
+                    if (newState.isCPUGame) {
+                        const playerIndex = newState.players.findIndex((p: { id: string }) => p.id === playerId);
+                        const playerScore = newState.scores[playerIndex];
+                        const playerName = newState.players[playerIndex].name;
+                        const bestScore = scoreManager.getBestScore();
+
+                        if (playerScore > bestScore) {
+                            // ハイスコア更新
+                            scoreManager.saveScore(playerName, playerScore);
+                            setNewRecordData({ score: playerScore, playerName });
+                            setShowNewRecord(true);
+                            audioManager.playSE('se_newrecord');
+                        } else {
+                            audioManager.playSE('se_win');
+                        }
+                    } else {
+                        audioManager.playSE('se_win');
+                    }
+
+                    // 2秒後に勝敗画面を表示
+                    setTimeout(() => {
+                        setShowGameEnd(true);
+                        setIsInputDisabled(false);
+                    }, 2000);
+                }
+
+                setPreviousStatus(newState.status);
                 setGameState(newState);
                 setLoading(false);
             } catch (err) {
@@ -55,7 +107,7 @@ export const GamePage: React.FC = () => {
         const interval = setInterval(fetchState, 1000); // 1秒ごとにポーリング
 
         return () => clearInterval(interval);
-    }, [roomId, playerId, gameState?.status]);
+    }, [roomId, playerId, gameState?.status, previousStatus]);
 
     const handleStartGame = async () => {
         if (!roomId) return;
@@ -69,10 +121,12 @@ export const GamePage: React.FC = () => {
     };
 
     const handleColumnClick = async (column: number) => {
-        if (!roomId || !playerId || !gameState) return;
+        if (!roomId || !playerId || !gameState || isInputDisabled) return;
 
         try {
             await makeMove(roomId, playerId, column);
+            // コマ落下 SE を再生
+            audioManager.playSE('se_drop');
         } catch (err) {
             console.error('Failed to make move:', err);
         }
@@ -82,6 +136,9 @@ export const GamePage: React.FC = () => {
         if (!roomId) return;
 
         try {
+            setShowGameEnd(false);
+            setShowNewRecord(false);
+            setNewRecordData(null);
             await rematch(roomId);
         } catch (err) {
             setError('再戦の開始に失敗しました');
@@ -134,8 +191,17 @@ export const GamePage: React.FC = () => {
                 />
             )}
 
+            {/* ハイスコア更新演出 */}
+            {showNewRecord && newRecordData && (
+                <NewRecordModal
+                    score={newRecordData.score}
+                    playerName={newRecordData.playerName}
+                    onClose={() => setShowNewRecord(false)}
+                />
+            )}
+
             {/* ゲーム終了モーダル */}
-            {gameState.status === 'finished' && (
+            {showGameEnd && gameState.status === 'finished' && (
                 <GameEndModal
                     gameState={gameState}
                     playerId={playerId}

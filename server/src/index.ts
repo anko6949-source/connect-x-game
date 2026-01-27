@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { GameRoom } from './GameRoom.js';
@@ -216,6 +217,144 @@ app.post('/room/rematch', (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error rematching:', error);
         res.status(500).json({ error: 'Failed to rematch' });
+    }
+});
+
+/**
+ * POST /scores
+ * スコア保存
+ */
+app.post('/scores', async (req: Request, res: Response) => {
+    console.log('📝 POST /scores - Request received');
+    console.log('Request body:', req.body);
+
+    try {
+        const { name, score } = req.body;
+
+        if (!name || score === undefined) {
+            console.log('❌ Validation failed: name or score missing');
+            return res.status(400).json({ error: 'Name and score are required' });
+        }
+
+        console.log(`🎯 Saving score: ${name} - ${score}`);
+
+        const { supabase } = await import('./supabase.js');
+
+        // スコアを保存
+        console.log('💾 Attempting to insert into Supabase...');
+        const { data: insertData, error: insertError } = await supabase
+            .from('scores')
+            .insert([
+                {
+                    player_name: name,
+                    score: score
+                }
+            ])
+            .select();
+
+        if (insertError) {
+            console.error('❌ Supabase insert error:', insertError);
+            return res.status(500).json({ error: 'Failed to save score', details: insertError.message });
+        }
+
+        console.log('✅ Score saved successfully:', insertData);
+
+        // TOP 3を取得して新記録か判定
+        console.log('🔍 Fetching TOP 3 for new record check...');
+        const { data: top3, error: top3Error } = await supabase
+            .from('scores')
+            .select('score')
+            .order('score', { ascending: false })
+            .limit(3);
+
+        if (top3Error) {
+            console.error('❌ Error fetching top3:', top3Error);
+        } else {
+            console.log('📊 Current TOP 3:', top3);
+        }
+
+        const isNewRecord = top3 && top3.length > 0 ? score >= top3[0].score : true;
+        console.log(`🏆 Is new record: ${isNewRecord}`);
+
+        res.json({
+            success: true,
+            isNewRecord
+        });
+        console.log('✅ Response sent successfully');
+    } catch (error) {
+        console.error('❌ Error saving score:', error);
+        res.status(500).json({ error: 'Failed to save score' });
+    }
+});
+
+/**
+ * GET /scores/top3
+ * ALL-TIME TOP 3取得
+ */
+app.get('/scores/top3', async (req: Request, res: Response) => {
+    try {
+        const { supabase } = await import('./supabase.js');
+
+        const { data, error } = await supabase
+            .from('scores')
+            .select('player_name, score, created_at')
+            .order('score', { ascending: false })
+            .limit(3);
+
+        if (error) {
+            console.error('Error fetching top3:', error);
+            return res.status(500).json({ error: 'Failed to fetch top scores' });
+        }
+
+        const scores = (data || []).map(entry => ({
+            name: entry.player_name,
+            score: entry.score,
+            date: entry.created_at
+        }));
+
+        res.json({ scores });
+    } catch (error) {
+        console.error('Error fetching top3:', error);
+        res.status(500).json({ error: 'Failed to fetch top scores' });
+    }
+});
+
+/**
+ * GET /scores/today
+ * TODAY'S BEST取得（JST基準）
+ */
+app.get('/scores/today', async (req: Request, res: Response) => {
+    try {
+        const { supabase, getTodayJST } = await import('./supabase.js');
+        const todayJST = getTodayJST();
+
+        // JSTで今日の開始時刻と終了時刻を計算
+        const startOfDayJST = new Date(`${todayJST}T00:00:00+09:00`);
+        const endOfDayJST = new Date(`${todayJST}T23:59:59+09:00`);
+
+        const { data, error } = await supabase
+            .from('scores')
+            .select('player_name, score, created_at')
+            .gte('created_at', startOfDayJST.toISOString())
+            .lte('created_at', endOfDayJST.toISOString())
+            .order('score', { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error('Error fetching today best:', error);
+            return res.status(500).json({ error: 'Failed to fetch today best' });
+        }
+
+        const score = data && data.length > 0 ? {
+            name: data[0].player_name,
+            score: data[0].score,
+            date: data[0].created_at
+        } : null;
+
+        res.json({ score });
+    } catch (error) {
+        console.error('Error fetching today best:', error);
+        res.status(500).json({ error: 'Failed to fetch today best' });
     }
 });
 

@@ -71,17 +71,18 @@ export const GamePage: React.FC = () => {
                         const playerIndex = newState.players.findIndex((p: { id: string }) => p.id === playerId);
                         const playerScore = newState.scores[playerIndex];
                         const playerName = newState.players[playerIndex].name;
-                        const bestScore = scoreManager.getBestScore();
 
-                        if (playerScore > bestScore) {
-                            // ハイスコア更新
-                            scoreManager.saveScore(playerName, playerScore);
-                            setNewRecordData({ score: playerScore, playerName });
-                            setShowNewRecord(true);
-                            audioManager.playSE('se_newrecord');
-                        } else {
-                            audioManager.playSE('se_win');
-                        }
+                        // 非同期でスコアを保存し、新記録かどうか判定
+                        scoreManager.saveScore(playerName, playerScore).then(({ isNewRecord }) => {
+                            if (isNewRecord) {
+                                // ハイスコア更新
+                                setNewRecordData({ score: playerScore, playerName });
+                                setShowNewRecord(true);
+                                audioManager.playSE('se_newrecord');
+                            } else {
+                                audioManager.playSE('se_win');
+                            }
+                        });
                     } else {
                         audioManager.playSE('se_win');
                     }

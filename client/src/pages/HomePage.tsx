@@ -16,8 +16,14 @@ export const HomePage: React.FC = () => {
 
     useEffect(() => {
         // スコアデータを読み込み
-        setAllTimeTop3(scoreManager.getAllTimeTop3());
-        setTodayBest(scoreManager.getTodayBest());
+        const fetchScores = async () => {
+            const top3 = await scoreManager.getAllTimeTop3();
+            setAllTimeTop3(top3);
+
+            const today = await scoreManager.getTodayBest();
+            setTodayBest(today);
+        };
+        fetchScores();
     }, []);
 
     // BGM の再生開始

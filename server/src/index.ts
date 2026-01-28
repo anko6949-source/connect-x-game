@@ -240,11 +240,6 @@ app.post('/scores', async (req: Request, res: Response) => {
         console.log(`🎯 Saving score: ${name} - ${score}`);
 
         // スコアを保存
-        if (!supabase) {
-            console.error('❌ Supabase client is not initialized');
-            return res.status(500).json({ error: 'Database connection error' });
-        }
-
         console.log('💾 Attempting to insert into Supabase...');
         const { data: insertData, error: insertError } = await supabase
             .from('scores')
@@ -297,11 +292,6 @@ app.post('/scores', async (req: Request, res: Response) => {
  */
 app.get('/scores/top3', async (req: Request, res: Response) => {
     try {
-        if (!supabase) {
-            console.error('Supabase client is not initialized');
-            return res.status(500).json({ error: 'Database connection error' });
-        }
-
         const { data, error } = await supabase
             .from('scores')
             .select('player_name, score, created_at')
@@ -337,11 +327,6 @@ app.get('/scores/today', async (req: Request, res: Response) => {
         // JSTで今日の開始時刻と終了時刻を計算
         const startOfDayJST = new Date(`${todayJST}T00:00:00+09:00`);
         const endOfDayJST = new Date(`${todayJST}T23:59:59+09:00`);
-
-        if (!supabase) {
-            console.error('Supabase client is not initialized');
-            return res.status(500).json({ error: 'Database connection error' });
-        }
 
         const { data, error } = await supabase
             .from('scores')

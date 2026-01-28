@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { GameRoom } from './GameRoom.js';
+import { supabase, getTodayJST } from './supabase.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -238,8 +239,6 @@ app.post('/scores', async (req: Request, res: Response) => {
 
         console.log(`🎯 Saving score: ${name} - ${score}`);
 
-        const { supabase } = await import('./supabase');
-
         // スコアを保存
         console.log('💾 Attempting to insert into Supabase...');
         const { data: insertData, error: insertError } = await supabase
@@ -293,8 +292,6 @@ app.post('/scores', async (req: Request, res: Response) => {
  */
 app.get('/scores/top3', async (req: Request, res: Response) => {
     try {
-        const { supabase } = await import('./supabase');
-
         const { data, error } = await supabase
             .from('scores')
             .select('player_name, score, created_at')
@@ -325,7 +322,6 @@ app.get('/scores/top3', async (req: Request, res: Response) => {
  */
 app.get('/scores/today', async (req: Request, res: Response) => {
     try {
-        const { supabase, getTodayJST } = await import('./supabase');
         const todayJST = getTodayJST();
 
         // JSTで今日の開始時刻と終了時刻を計算

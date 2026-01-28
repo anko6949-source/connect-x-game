@@ -10,7 +10,10 @@ if (!supabaseUrl || !supabaseKey) {
     console.error('Warning: Supabase credentials not found in environment variables.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// 環境変数が存在する場合のみクライアントを作成（サーバークラッシュ回避）
+export const supabase = (supabaseUrl && supabaseKey)
+    ? createClient(supabaseUrl, supabaseKey)
+    : null;
 
 export interface ScoreEntry {
     name: string;
